@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import '../models/student_draft.dart';
+import '../../../models/student_draft.dart';
 
-class MentorInfoScreen extends StatefulWidget {
-  const MentorInfoScreen({super.key});
+class SetLoginCredentialsScreen extends StatefulWidget {
+  const SetLoginCredentialsScreen({super.key});
 
   @override
-  State<MentorInfoScreen> createState() => _MentorInfoScreenState();
+  State<SetLoginCredentialsScreen> createState() =>
+      _SetLoginCredentialsScreenState();
 }
 
-class _MentorInfoScreenState extends State<MentorInfoScreen>
+class _SetLoginCredentialsScreenState
+    extends State<SetLoginCredentialsScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -16,14 +18,16 @@ class _MentorInfoScreenState extends State<MentorInfoScreen>
   final _formKey = GlobalKey<FormState>();
   final Color primaryBlue = const Color(0xFF1976D2);
 
-  // Controllers (prefilled)
-  final TextEditingController mentorNameController =
-      TextEditingController(text: StudentDraft.mentorName);
-  final TextEditingController mentorMobileController =
-      TextEditingController(text: StudentDraft.mentorMobile);
+  final TextEditingController usernameController =
+      TextEditingController(text: StudentDraft.username);
+  final TextEditingController passwordController =
+      TextEditingController(text: StudentDraft.password);
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
-  String feedbackStatus =
-      StudentDraft.mentorFeedbackStatus ?? "Pending";
+  bool obscurePassword = true;
+  bool obscureConfirm = true;
+  bool acceptTerms = false;
 
   @override
   void initState() {
@@ -43,17 +47,6 @@ class _MentorInfoScreenState extends State<MentorInfoScreen>
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  /// SAVE INTO DRAFT
-  void _saveForm() {
-    if (_formKey.currentState!.validate()) {
-      StudentDraft.mentorName = mentorNameController.text.trim();
-      StudentDraft.mentorMobile = mentorMobileController.text.trim();
-      StudentDraft.mentorFeedbackStatus = feedbackStatus;
-
-      Navigator.pop(context, true);
-    }
   }
 
   @override
@@ -92,15 +85,15 @@ class _MentorInfoScreenState extends State<MentorInfoScreen>
                   key: _formKey,
                   child: Column(
                     children: [
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 60),
 
-                      Icon(Icons.person_outline,
-                          size: 60, color: primaryBlue),
+                      Icon(Icons.lock_outline,
+                          size: 70, color: primaryBlue),
                       const SizedBox(height: 10),
                       Text(
-                        "Mentor Information",
+                        "Set Login Credentials",
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 26,
                           fontWeight: FontWeight.bold,
                           color: primaryBlue,
                         ),
@@ -126,66 +119,62 @@ class _MentorInfoScreenState extends State<MentorInfoScreen>
                           child: Column(
                             children: [
                               _inputField(
-                                "Mentor Name",
-                                mentorNameController,
+                                "Username / Email",
+                                usernameController,
                                 Icons.person,
-                                validator: (v) =>
-                                    v!.isEmpty ? "Required" : null,
+                                validator: _validateUsername,
                               ),
                               _inputField(
-                                "Mentor Mobile Number",
-                                mentorMobileController,
-                                Icons.phone,
-                                keyboard: TextInputType.phone,
-                                validator: _validateMobile,
+                                "Password",
+                                passwordController,
+                                Icons.lock,
+                                obscure: obscurePassword,
+                                toggle: () =>
+                                    setState(() => obscurePassword = !obscurePassword),
+                                validator: _validatePassword,
+                              ),
+                              _inputField(
+                                "Confirm Password",
+                                confirmPasswordController,
+                                Icons.lock_outline,
+                                obscure: obscureConfirm,
+                                toggle: () =>
+                                    setState(() => obscureConfirm = !obscureConfirm),
+                                validator: _validateConfirmPassword,
                               ),
 
-                              DropdownButtonFormField<String>(
-                                value: feedbackStatus,
-                                items: ["Pending", "Completed", "Reviewed"]
-                                    .map(
-                                      (s) => DropdownMenuItem(
-                                        value: s,
-                                        child: Text(s),
-                                      ),
-                                    )
-                                    .toList(),
+                              CheckboxListTile(
+                                value: acceptTerms,
                                 onChanged: (v) =>
-                                    setState(() => feedbackStatus = v!),
-                                decoration: InputDecoration(
-                                  labelText: "Mentor Feedback Status",
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  prefixIcon: Icon(Icons.feedback,
-                                      color: primaryBlue),
-                                  border: OutlineInputBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
+                                    setState(() => acceptTerms = v!),
+                                title: const Text(
+                                    "I agree to the Terms & Conditions"),
+                                controlAffinity:
+                                    ListTileControlAffinity.leading,
+                                contentPadding: EdgeInsets.zero,
                               ),
 
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 20),
 
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
-                                  onPressed: _saveForm,
+                                  onPressed:
+                                      acceptTerms ? _saveAndContinue : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: primaryBlue,
+                                    disabledBackgroundColor:
+                                        Colors.grey.shade400,
                                     padding:
-                                        const EdgeInsets.symmetric(
-                                            vertical: 14),
+                                        const EdgeInsets.symmetric(vertical: 14),
                                     shape: RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.circular(12),
                                     ),
                                   ),
                                   child: const Text(
-                                    "Save & Go Back",
-                                    style:
-                                        TextStyle(color: Colors.black),
+                                    "Create Account",
+                                    style: TextStyle(color: Colors.black),
                                   ),
                                 ),
                               ),
@@ -208,20 +197,32 @@ class _MentorInfoScreenState extends State<MentorInfoScreen>
     String label,
     TextEditingController controller,
     IconData icon, {
-    TextInputType keyboard = TextInputType.text,
+    bool obscure = false,
+    VoidCallback? toggle,
     String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
-        keyboardType: keyboard,
+        obscureText: obscure,
         validator: validator,
         decoration: InputDecoration(
           labelText: label,
           filled: true,
           fillColor: Colors.white,
           prefixIcon: Icon(icon, color: primaryBlue),
+          suffixIcon: toggle != null
+              ? IconButton(
+                  icon: Icon(
+                    obscure
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                    color: primaryBlue,
+                  ),
+                  onPressed: toggle,
+                )
+              : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -231,11 +232,45 @@ class _MentorInfoScreenState extends State<MentorInfoScreen>
     );
   }
 
-  String? _validateMobile(String? value) {
-    if (value == null || value.isEmpty) return "Required";
-    if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
-      return "Enter 10-digit mobile number";
+  /// VALIDATIONS
+  String? _validateUsername(String? v) {
+    if (v == null || v.isEmpty) return "Required";
+    if (v.contains(" ")) return "No spaces allowed";
+    if (v.length < 5) return "Minimum 5 characters";
+    return null;
+  }
+
+  String? _validatePassword(String? v) {
+    if (v == null || v.isEmpty) return "Required";
+    if (v.length < 8) return "Minimum 8 characters";
+    if (!RegExp(r'[A-Z]').hasMatch(v)) return "Add 1 uppercase letter";
+    if (!RegExp(r'[0-9]').hasMatch(v)) return "Add 1 number";
+    if (!RegExp(r'[!@#\$&*~]').hasMatch(v)) {
+      return "Add 1 special character";
     }
     return null;
+  }
+
+  String? _validateConfirmPassword(String? v) {
+    if (v == null || v.isEmpty) return "Required";
+    if (v != passwordController.text) {
+      return "Passwords do not match";
+    }
+    return null;
+  }
+
+  /// SAVE INTO DRAFT (FINAL STEP BEFORE BACKEND)
+  void _saveAndContinue() {
+    if (_formKey.currentState!.validate()) {
+      StudentDraft.username = usernameController.text.trim();
+      StudentDraft.password = passwordController.text.trim();
+
+      // TEMP success (backend comes next)
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Draft saved. Ready for backend.")),
+      );
+
+      Navigator.popUntil(context, (route) => route.isFirst);
+    }
   }
 }

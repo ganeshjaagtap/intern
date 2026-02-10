@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/chat/screens/chat_selection_screen.dart';
+import 'package:flutter_application_2/features/chat/screens/chat_selection_screen.dart';
 
-import 'StudentDashboardScreen.dart';
-import 'AttendanceScreen.dart';
-import 'ReportScreen.dart';
-import 'Main_Login.dart';
+import '../dashboard/StudentDashboardScreen.dart';
+import '../attendance/AttendanceScreen.dart';
+import '../reports/ReportScreen.dart';
+import '../auth/Main_Login.dart';
 
 import 'EditProfileScreen.dart';
 import 'NotificationScreen.dart';

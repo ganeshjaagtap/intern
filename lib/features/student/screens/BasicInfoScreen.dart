@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../models/student_draft.dart';
+import '../../../models/student_draft.dart';
 
-class AcademicDetailsScreen extends StatefulWidget {
-  const AcademicDetailsScreen({super.key});
+class BasicInfoScreen extends StatefulWidget {
+  const BasicInfoScreen({super.key});
 
   @override
-  State<AcademicDetailsScreen> createState() => _AcademicDetailsScreenState();
+  State<BasicInfoScreen> createState() => _BasicInfoScreenState();
 }
 
-class _AcademicDetailsScreenState extends State<AcademicDetailsScreen>
+class _BasicInfoScreenState extends State<BasicInfoScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -16,15 +16,21 @@ class _AcademicDetailsScreenState extends State<AcademicDetailsScreen>
   final _formKey = GlobalKey<FormState>();
   final Color primaryBlue = const Color(0xFF1976D2);
 
-  // Controllers (prefilled)
-  final TextEditingController collegeController =
-      TextEditingController(text: StudentDraft.college);
-  final TextEditingController courseController =
-      TextEditingController(text: StudentDraft.course);
-  final TextEditingController semesterController =
-      TextEditingController(text: StudentDraft.semester);
-  final TextEditingController marksController =
-      TextEditingController(text: StudentDraft.marks);
+  // Controllers (pre-filled if user revisits screen)
+  final TextEditingController fullNameController =
+      TextEditingController(text: StudentDraft.fullName);
+  final TextEditingController enrollmentController =
+      TextEditingController(text: StudentDraft.enrollmentNo);
+  final TextEditingController emailController =
+      TextEditingController(text: StudentDraft.email);
+  final TextEditingController mobileController =
+      TextEditingController(text: StudentDraft.mobile);
+  final TextEditingController dobController =
+      TextEditingController(text: StudentDraft.dob);
+  final TextEditingController cityController =
+      TextEditingController(text: StudentDraft.city);
+
+  String gender = StudentDraft.gender ?? "Male";
 
   @override
   void initState() {
@@ -46,13 +52,16 @@ class _AcademicDetailsScreenState extends State<AcademicDetailsScreen>
     super.dispose();
   }
 
-  /// SAVE INTO DRAFT
+  /// SAVE DATA INTO DRAFT MODEL
   void _saveForm() {
     if (_formKey.currentState!.validate()) {
-      StudentDraft.college = collegeController.text.trim();
-      StudentDraft.course = courseController.text.trim();
-      StudentDraft.semester = semesterController.text.trim();
-      StudentDraft.marks = marksController.text.trim();
+      StudentDraft.fullName = fullNameController.text.trim();
+      StudentDraft.enrollmentNo = enrollmentController.text.trim();
+      StudentDraft.email = emailController.text.trim();
+      StudentDraft.mobile = mobileController.text.trim();
+      StudentDraft.dob = dobController.text.trim();
+      StudentDraft.gender = gender;
+      StudentDraft.city = cityController.text.trim();
 
       Navigator.pop(context, true);
     }
@@ -63,7 +72,7 @@ class _AcademicDetailsScreenState extends State<AcademicDetailsScreen>
     return Scaffold(
       body: Stack(
         children: [
-          /// 🔁 BACKGROUND
+          /// 🔁 BACKGROUND ANIMATION
           AnimatedBuilder(
             animation: _animation,
             builder: (context, child) {
@@ -96,10 +105,10 @@ class _AcademicDetailsScreenState extends State<AcademicDetailsScreen>
                     children: [
                       const SizedBox(height: 50),
 
-                      Icon(Icons.school, size: 60, color: primaryBlue),
+                      Icon(Icons.person, size: 60, color: primaryBlue),
                       const SizedBox(height: 10),
                       Text(
-                        "Academic Details",
+                        "Basic Information",
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -127,36 +136,77 @@ class _AcademicDetailsScreenState extends State<AcademicDetailsScreen>
                           child: Column(
                             children: [
                               _inputField(
-                                "College Name",
-                                collegeController,
-                                Icons.account_balance,
+                                "Full Name",
+                                fullNameController,
+                                Icons.person,
                                 validator: (v) =>
                                     v!.isEmpty ? "Required" : null,
                               ),
                               _inputField(
-                                "Course",
-                                courseController,
-                                Icons.book,
+                                "Enrollment Number",
+                                enrollmentController,
+                                Icons.confirmation_number,
                                 validator: (v) =>
                                     v!.isEmpty ? "Required" : null,
                               ),
                               _inputField(
-                                "Current Semester",
-                                semesterController,
-                                Icons.timeline,
-                                keyboard: TextInputType.number,
-                                validator: _validateSemester,
+                                "Email ID",
+                                emailController,
+                                Icons.email,
+                                validator: _validateEmail,
                               ),
                               _inputField(
-                                "Last Year Marks (%)",
-                                marksController,
-                                Icons.score,
-                                keyboard: TextInputType.number,
-                                validator: _validateMarks,
+                                "Mobile Number",
+                                mobileController,
+                                Icons.phone,
+                                keyboard: TextInputType.phone,
+                                validator: _validateMobile,
+                              ),
+                              _inputField(
+                                "Date of Birth",
+                                dobController,
+                                Icons.calendar_today,
+                                readOnly: true,
+                                onTap: _pickDate,
+                                validator: (v) =>
+                                    v!.isEmpty ? "Select DOB" : null,
+                              ),
+
+                              /// GENDER
+                              DropdownButtonFormField<String>(
+                                value: gender,
+                                items: ["Male", "Female", "Other"]
+                                    .map(
+                                      (g) => DropdownMenuItem(
+                                        value: g,
+                                        child: Text(g),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() => gender = value!);
+                                },
+                                validator: (v) =>
+                                    v == null ? "Select gender" : null,
+                                decoration: _decoration(
+                                  "Gender",
+                                  Icons.person_outline,
+                                ),
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              _inputField(
+                                "City",
+                                cityController,
+                                Icons.location_city,
+                                validator: (v) =>
+                                    v!.isEmpty ? "Required" : null,
                               ),
 
                               const SizedBox(height: 24),
 
+                              /// SAVE BUTTON
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
@@ -190,10 +240,13 @@ class _AcademicDetailsScreenState extends State<AcademicDetailsScreen>
     );
   }
 
+  /// INPUT FIELD
   Widget _inputField(
     String label,
     TextEditingController controller,
     IconData icon, {
+    bool readOnly = false,
+    VoidCallback? onTap,
     TextInputType keyboard = TextInputType.text,
     String? Function(String?)? validator,
   }) {
@@ -201,37 +254,59 @@ class _AcademicDetailsScreenState extends State<AcademicDetailsScreen>
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
+        readOnly: readOnly,
+        onTap: onTap,
         keyboardType: keyboard,
         validator: validator,
-        decoration: InputDecoration(
-          labelText: label,
-          filled: true,
-          fillColor: Colors.white,
-          prefixIcon: Icon(icon, color: primaryBlue),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-        ),
+        decoration: _decoration(label, icon),
       ),
     );
   }
 
-  String? _validateSemester(String? value) {
+  /// DECORATION
+  InputDecoration _decoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      prefixIcon: Icon(icon, color: primaryBlue),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  /// EMAIL VALIDATION
+  String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) return "Required";
-    final sem = int.tryParse(value);
-    if (sem == null || sem < 1 || sem > 12) {
-      return "Enter valid semester (1–12)";
+    final emailRegex =
+        RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value)) return "Invalid email";
+    return null;
+  }
+
+  /// MOBILE VALIDATION
+  String? _validateMobile(String? value) {
+    if (value == null || value.isEmpty) return "Required";
+    if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
+      return "Enter 10-digit mobile number";
     }
     return null;
   }
 
-  String? _validateMarks(String? value) {
-    if (value == null || value.isEmpty) return "Required";
-    final marks = double.tryParse(value);
-    if (marks == null || marks < 0 || marks > 100) {
-      return "Enter marks between 0–100";
+  /// DATE PICKER
+  void _pickDate() async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2002),
+      firstDate: DateTime(1990),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
+      dobController.text =
+          "${picked.day}/${picked.month}/${picked.year}";
     }
-    return null;
   }
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/chat/screens/chat_selection_screen.dart';
+import 'package:flutter_application_2/features/chat/screens/chat_selection_screen.dart';
 import 'PastAttendanceScreen.dart';
-import 'StudentDashboardScreen.dart';
-import 'ReportScreen.dart';
-import 'SettingsScreen.dart';
+import '../dashboard/StudentDashboardScreen.dart';
+import '../reports/ReportScreen.dart';
+import '../profile/SettingsScreen.dart';
 
 class AttendanceScreen extends StatelessWidget {
   const AttendanceScreen({super.key});

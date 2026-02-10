@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'CreateAccountScreen.dart';
-import 'StudentDashboardScreen.dart';
+import '../dashboard/StudentDashboardScreen.dart';
 
 
 class LoginScreen extends StatefulWidget {

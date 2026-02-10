@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import '../models/student_draft.dart';
+import '../../../models/student_draft.dart';
 
-class SetLoginCredentialsScreen extends StatefulWidget {
-  const SetLoginCredentialsScreen({super.key});
+class InternshipDetailsScreen extends StatefulWidget {
+  const InternshipDetailsScreen({super.key});
 
   @override
-  State<SetLoginCredentialsScreen> createState() =>
-      _SetLoginCredentialsScreenState();
+  State<InternshipDetailsScreen> createState() =>
+      _InternshipDetailsScreenState();
 }
 
-class _SetLoginCredentialsScreenState
-    extends State<SetLoginCredentialsScreen>
+class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -18,16 +17,21 @@ class _SetLoginCredentialsScreenState
   final _formKey = GlobalKey<FormState>();
   final Color primaryBlue = const Color(0xFF1976D2);
 
-  final TextEditingController usernameController =
-      TextEditingController(text: StudentDraft.username);
-  final TextEditingController passwordController =
-      TextEditingController(text: StudentDraft.password);
-  final TextEditingController confirmPasswordController =
+  // Controllers (prefilled)
+  final TextEditingController titleController =
+      TextEditingController(text: StudentDraft.role);
+  final TextEditingController companyController =
+      TextEditingController(text: StudentDraft.company);
+  final TextEditingController startDateController =
+      TextEditingController();
+  final TextEditingController endDateController =
       TextEditingController();
 
-  bool obscurePassword = true;
-  bool obscureConfirm = true;
-  bool acceptTerms = false;
+  String internshipType = "Paid";
+  String mode = "Online";
+
+  DateTime? startDate;
+  DateTime? endDate;
 
   @override
   void initState() {
@@ -41,12 +45,33 @@ class _SetLoginCredentialsScreenState
     _animation = Tween<double>(begin: -200, end: 200).animate(
       CurvedAnimation(parent: _controller, curve: Curves.linear),
     );
+
+    // Prefill duration if available
+    if (StudentDraft.duration != null) {
+      final parts = StudentDraft.duration!.split(" - ");
+      if (parts.length == 2) {
+        startDateController.text = parts[0];
+        endDateController.text = parts[1];
+      }
+    }
   }
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  /// SAVE INTO DRAFT
+  void _saveForm() {
+    if (_formKey.currentState!.validate()) {
+      StudentDraft.role = titleController.text.trim();
+      StudentDraft.company = companyController.text.trim();
+      StudentDraft.duration =
+          "${startDateController.text} - ${endDateController.text}";
+
+      Navigator.pop(context, true);
+    }
   }
 
   @override
@@ -85,15 +110,14 @@ class _SetLoginCredentialsScreenState
                   key: _formKey,
                   child: Column(
                     children: [
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 50),
 
-                      Icon(Icons.lock_outline,
-                          size: 70, color: primaryBlue),
+                      Icon(Icons.work, size: 60, color: primaryBlue),
                       const SizedBox(height: 10),
                       Text(
-                        "Set Login Credentials",
+                        "Internship Details",
                         style: TextStyle(
-                          fontSize: 26,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: primaryBlue,
                         ),
@@ -119,61 +143,54 @@ class _SetLoginCredentialsScreenState
                           child: Column(
                             children: [
                               _inputField(
-                                "Username / Email",
-                                usernameController,
-                                Icons.person,
-                                validator: _validateUsername,
+                                "Internship Title",
+                                titleController,
+                                Icons.assignment,
+                                validator: (v) =>
+                                    v!.isEmpty ? "Required" : null,
                               ),
                               _inputField(
-                                "Password",
-                                passwordController,
-                                Icons.lock,
-                                obscure: obscurePassword,
-                                toggle: () =>
-                                    setState(() => obscurePassword = !obscurePassword),
-                                validator: _validatePassword,
+                                "Company Name",
+                                companyController,
+                                Icons.business,
+                                validator: (v) =>
+                                    v!.isEmpty ? "Required" : null,
+                              ),
+
+                              _inputField(
+                                "Start Date",
+                                startDateController,
+                                Icons.date_range,
+                                readOnly: true,
+                                onTap: () => _pickDate(true),
+                                validator: (v) =>
+                                    v!.isEmpty ? "Select start date" : null,
                               ),
                               _inputField(
-                                "Confirm Password",
-                                confirmPasswordController,
-                                Icons.lock_outline,
-                                obscure: obscureConfirm,
-                                toggle: () =>
-                                    setState(() => obscureConfirm = !obscureConfirm),
-                                validator: _validateConfirmPassword,
+                                "End Date",
+                                endDateController,
+                                Icons.event,
+                                readOnly: true,
+                                onTap: () => _pickDate(false),
+                                validator: _validateEndDate,
                               ),
 
-                              CheckboxListTile(
-                                value: acceptTerms,
-                                onChanged: (v) =>
-                                    setState(() => acceptTerms = v!),
-                                title: const Text(
-                                    "I agree to the Terms & Conditions"),
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 24),
 
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
-                                  onPressed:
-                                      acceptTerms ? _saveAndContinue : null,
+                                  onPressed: _saveForm,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: primaryBlue,
-                                    disabledBackgroundColor:
-                                        Colors.grey.shade400,
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
                                   child: const Text(
-                                    "Create Account",
+                                    "Save & Go Back",
                                     style: TextStyle(color: Colors.black),
                                   ),
                                 ),
@@ -197,32 +214,22 @@ class _SetLoginCredentialsScreenState
     String label,
     TextEditingController controller,
     IconData icon, {
-    bool obscure = false,
-    VoidCallback? toggle,
+    bool readOnly = false,
+    VoidCallback? onTap,
     String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
-        obscureText: obscure,
+        readOnly: readOnly,
+        onTap: onTap,
         validator: validator,
         decoration: InputDecoration(
           labelText: label,
           filled: true,
           fillColor: Colors.white,
           prefixIcon: Icon(icon, color: primaryBlue),
-          suffixIcon: toggle != null
-              ? IconButton(
-                  icon: Icon(
-                    obscure
-                        ? Icons.visibility_off
-                        : Icons.visibility,
-                    color: primaryBlue,
-                  ),
-                  onPressed: toggle,
-                )
-              : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -232,45 +239,34 @@ class _SetLoginCredentialsScreenState
     );
   }
 
-  /// VALIDATIONS
-  String? _validateUsername(String? v) {
-    if (v == null || v.isEmpty) return "Required";
-    if (v.contains(" ")) return "No spaces allowed";
-    if (v.length < 5) return "Minimum 5 characters";
-    return null;
+  void _pickDate(bool isStart) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+    );
+
+    if (picked != null) {
+      if (isStart) {
+        startDate = picked;
+        startDateController.text =
+            "${picked.day}/${picked.month}/${picked.year}";
+      } else {
+        endDate = picked;
+        endDateController.text =
+            "${picked.day}/${picked.month}/${picked.year}";
+      }
+    }
   }
 
-  String? _validatePassword(String? v) {
-    if (v == null || v.isEmpty) return "Required";
-    if (v.length < 8) return "Minimum 8 characters";
-    if (!RegExp(r'[A-Z]').hasMatch(v)) return "Add 1 uppercase letter";
-    if (!RegExp(r'[0-9]').hasMatch(v)) return "Add 1 number";
-    if (!RegExp(r'[!@#\$&*~]').hasMatch(v)) {
-      return "Add 1 special character";
+  String? _validateEndDate(String? value) {
+    if (value == null || value.isEmpty) return "Select end date";
+    if (startDate != null && endDate != null) {
+      if (endDate!.isBefore(startDate!)) {
+        return "End date must be after start date";
+      }
     }
     return null;
-  }
-
-  String? _validateConfirmPassword(String? v) {
-    if (v == null || v.isEmpty) return "Required";
-    if (v != passwordController.text) {
-      return "Passwords do not match";
-    }
-    return null;
-  }
-
-  /// SAVE INTO DRAFT (FINAL STEP BEFORE BACKEND)
-  void _saveAndContinue() {
-    if (_formKey.currentState!.validate()) {
-      StudentDraft.username = usernameController.text.trim();
-      StudentDraft.password = passwordController.text.trim();
-
-      // TEMP success (backend comes next)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Draft saved. Ready for backend.")),
-      );
-
-      Navigator.popUntil(context, (route) => route.isFirst);
-    }
   }
 }

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import '../models/student_draft.dart';
+import '../../../models/student_draft.dart';
 
-class InternshipDetailsScreen extends StatefulWidget {
-  const InternshipDetailsScreen({super.key});
+class SkillsInterestsScreen extends StatefulWidget {
+  const SkillsInterestsScreen({super.key});
 
   @override
-  State<InternshipDetailsScreen> createState() =>
-      _InternshipDetailsScreenState();
+  State<SkillsInterestsScreen> createState() =>
+      _SkillsInterestsScreenState();
 }
 
-class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
+class _SkillsInterestsScreenState extends State<SkillsInterestsScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -18,20 +18,14 @@ class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
   final Color primaryBlue = const Color(0xFF1976D2);
 
   // Controllers (prefilled)
-  final TextEditingController titleController =
-      TextEditingController(text: StudentDraft.role);
-  final TextEditingController companyController =
-      TextEditingController(text: StudentDraft.company);
-  final TextEditingController startDateController =
-      TextEditingController();
-  final TextEditingController endDateController =
-      TextEditingController();
-
-  String internshipType = "Paid";
-  String mode = "Online";
-
-  DateTime? startDate;
-  DateTime? endDate;
+  final TextEditingController technicalSkillsController =
+      TextEditingController(text: StudentDraft.technicalSkills);
+  final TextEditingController softSkillsController =
+      TextEditingController(text: StudentDraft.softSkills);
+  final TextEditingController interestsController =
+      TextEditingController(text: StudentDraft.interests);
+  final TextEditingController careerGoalController =
+      TextEditingController(text: StudentDraft.careerGoal);
 
   @override
   void initState() {
@@ -45,15 +39,6 @@ class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
     _animation = Tween<double>(begin: -200, end: 200).animate(
       CurvedAnimation(parent: _controller, curve: Curves.linear),
     );
-
-    // Prefill duration if available
-    if (StudentDraft.duration != null) {
-      final parts = StudentDraft.duration!.split(" - ");
-      if (parts.length == 2) {
-        startDateController.text = parts[0];
-        endDateController.text = parts[1];
-      }
-    }
   }
 
   @override
@@ -65,10 +50,14 @@ class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
   /// SAVE INTO DRAFT
   void _saveForm() {
     if (_formKey.currentState!.validate()) {
-      StudentDraft.role = titleController.text.trim();
-      StudentDraft.company = companyController.text.trim();
-      StudentDraft.duration =
-          "${startDateController.text} - ${endDateController.text}";
+      StudentDraft.technicalSkills =
+          technicalSkillsController.text.trim();
+      StudentDraft.softSkills =
+          softSkillsController.text.trim();
+      StudentDraft.interests =
+          interestsController.text.trim();
+      StudentDraft.careerGoal =
+          careerGoalController.text.trim();
 
       Navigator.pop(context, true);
     }
@@ -89,9 +78,9 @@ class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
               );
             },
             child: OverflowBox(
-              maxWidth: MediaQuery.of(context).size.width * 2,
+              maxWidth: MediaQuery.of(context).size.width * 1.5,
               child: SizedBox(
-                width: MediaQuery.of(context).size.width * 2,
+                width: MediaQuery.of(context).size.width * 1.5,
                 height: MediaQuery.of(context).size.height,
                 child: Image.asset(
                   'assets/images/collage_bg.jpg',
@@ -112,10 +101,10 @@ class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
                     children: [
                       const SizedBox(height: 50),
 
-                      Icon(Icons.work, size: 60, color: primaryBlue),
+                      Icon(Icons.star, size: 60, color: primaryBlue),
                       const SizedBox(height: 10),
                       Text(
-                        "Internship Details",
+                        "Skills & Interests",
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -143,36 +132,39 @@ class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
                           child: Column(
                             children: [
                               _inputField(
-                                "Internship Title",
-                                titleController,
-                                Icons.assignment,
+                                "Technical Skills",
+                                technicalSkillsController,
+                                Icons.code,
+                                hint: "e.g. Flutter, Java, Python",
                                 validator: (v) =>
                                     v!.isEmpty ? "Required" : null,
                               ),
                               _inputField(
-                                "Company Name",
-                                companyController,
-                                Icons.business,
+                                "Soft Skills",
+                                softSkillsController,
+                                Icons.record_voice_over,
+                                hint:
+                                    "e.g. Communication, Teamwork",
                                 validator: (v) =>
                                     v!.isEmpty ? "Required" : null,
                               ),
-
                               _inputField(
-                                "Start Date",
-                                startDateController,
-                                Icons.date_range,
-                                readOnly: true,
-                                onTap: () => _pickDate(true),
+                                "Area of Interest",
+                                interestsController,
+                                Icons.interests,
+                                hint:
+                                    "e.g. Mobile Development",
                                 validator: (v) =>
-                                    v!.isEmpty ? "Select start date" : null,
+                                    v!.isEmpty ? "Required" : null,
                               ),
                               _inputField(
-                                "End Date",
-                                endDateController,
-                                Icons.event,
-                                readOnly: true,
-                                onTap: () => _pickDate(false),
-                                validator: _validateEndDate,
+                                "Career Goal",
+                                careerGoalController,
+                                Icons.flag,
+                                hint: "Your future goal",
+                                maxLines: 2,
+                                validator: (v) =>
+                                    v!.isEmpty ? "Required" : null,
                               ),
 
                               const SizedBox(height: 24),
@@ -183,15 +175,18 @@ class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
                                   onPressed: _saveForm,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: primaryBlue,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 14),
+                                    padding:
+                                        const EdgeInsets.symmetric(
+                                            vertical: 14),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius:
+                                          BorderRadius.circular(12),
                                     ),
                                   ),
                                   child: const Text(
                                     "Save & Go Back",
-                                    style: TextStyle(color: Colors.black),
+                                    style:
+                                        TextStyle(color: Colors.black),
                                   ),
                                 ),
                               ),
@@ -214,19 +209,19 @@ class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
     String label,
     TextEditingController controller,
     IconData icon, {
-    bool readOnly = false,
-    VoidCallback? onTap,
+    String? hint,
+    int maxLines = 1,
     String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
-        readOnly: readOnly,
-        onTap: onTap,
+        maxLines: maxLines,
         validator: validator,
         decoration: InputDecoration(
           labelText: label,
+          hintText: hint,
           filled: true,
           fillColor: Colors.white,
           prefixIcon: Icon(icon, color: primaryBlue),
@@ -237,36 +232,5 @@ class _InternshipDetailsScreenState extends State<InternshipDetailsScreen>
         ),
       ),
     );
-  }
-
-  void _pickDate(bool isStart) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-
-    if (picked != null) {
-      if (isStart) {
-        startDate = picked;
-        startDateController.text =
-            "${picked.day}/${picked.month}/${picked.year}";
-      } else {
-        endDate = picked;
-        endDateController.text =
-            "${picked.day}/${picked.month}/${picked.year}";
-      }
-    }
-  }
-
-  String? _validateEndDate(String? value) {
-    if (value == null || value.isEmpty) return "Select end date";
-    if (startDate != null && endDate != null) {
-      if (endDate!.isBefore(startDate!)) {
-        return "End date must be after start date";
-      }
-    }
-    return null;
   }
 }

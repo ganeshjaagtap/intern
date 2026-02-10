@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 // Import all completed screens
-import 'BasicInfoScreen.dart';
-import 'AcademicDetailsScreen.dart';
-import 'InternshipDetailsScreen.dart';
-import 'MentorInfoScreen.dart';
-import 'SkillsInterestsScreen.dart';
+import '../screens/BasicInfoScreen.dart';
+import '../screens/AcademicDetailsScreen.dart';
+import '../../interns/screens/InternshipDetailsScreen.dart';
+import '../../faculty/dashboard/MentorInfoScreen.dart';
+import '../screens/SkillsInterestsScreen.dart';
 
 // Placeholder import (you will create this later)
 import 'SetLoginCredentialsScreen.dart';

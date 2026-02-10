@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import '../models/student_draft.dart';
+import '../../../models/student_draft.dart';
 
-class SkillsInterestsScreen extends StatefulWidget {
-  const SkillsInterestsScreen({super.key});
+class MentorInfoScreen extends StatefulWidget {
+  const MentorInfoScreen({super.key});
 
   @override
-  State<SkillsInterestsScreen> createState() =>
-      _SkillsInterestsScreenState();
+  State<MentorInfoScreen> createState() => _MentorInfoScreenState();
 }
 
-class _SkillsInterestsScreenState extends State<SkillsInterestsScreen>
+class _MentorInfoScreenState extends State<MentorInfoScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -18,14 +17,13 @@ class _SkillsInterestsScreenState extends State<SkillsInterestsScreen>
   final Color primaryBlue = const Color(0xFF1976D2);
 
   // Controllers (prefilled)
-  final TextEditingController technicalSkillsController =
-      TextEditingController(text: StudentDraft.technicalSkills);
-  final TextEditingController softSkillsController =
-      TextEditingController(text: StudentDraft.softSkills);
-  final TextEditingController interestsController =
-      TextEditingController(text: StudentDraft.interests);
-  final TextEditingController careerGoalController =
-      TextEditingController(text: StudentDraft.careerGoal);
+  final TextEditingController mentorNameController =
+      TextEditingController(text: StudentDraft.mentorName);
+  final TextEditingController mentorMobileController =
+      TextEditingController(text: StudentDraft.mentorMobile);
+
+  String feedbackStatus =
+      StudentDraft.mentorFeedbackStatus ?? "Pending";
 
   @override
   void initState() {
@@ -50,14 +48,9 @@ class _SkillsInterestsScreenState extends State<SkillsInterestsScreen>
   /// SAVE INTO DRAFT
   void _saveForm() {
     if (_formKey.currentState!.validate()) {
-      StudentDraft.technicalSkills =
-          technicalSkillsController.text.trim();
-      StudentDraft.softSkills =
-          softSkillsController.text.trim();
-      StudentDraft.interests =
-          interestsController.text.trim();
-      StudentDraft.careerGoal =
-          careerGoalController.text.trim();
+      StudentDraft.mentorName = mentorNameController.text.trim();
+      StudentDraft.mentorMobile = mentorMobileController.text.trim();
+      StudentDraft.mentorFeedbackStatus = feedbackStatus;
 
       Navigator.pop(context, true);
     }
@@ -78,9 +71,9 @@ class _SkillsInterestsScreenState extends State<SkillsInterestsScreen>
               );
             },
             child: OverflowBox(
-              maxWidth: MediaQuery.of(context).size.width * 1.5,
+              maxWidth: MediaQuery.of(context).size.width * 2,
               child: SizedBox(
-                width: MediaQuery.of(context).size.width * 1.5,
+                width: MediaQuery.of(context).size.width * 2,
                 height: MediaQuery.of(context).size.height,
                 child: Image.asset(
                   'assets/images/collage_bg.jpg',
@@ -101,10 +94,11 @@ class _SkillsInterestsScreenState extends State<SkillsInterestsScreen>
                     children: [
                       const SizedBox(height: 50),
 
-                      Icon(Icons.star, size: 60, color: primaryBlue),
+                      Icon(Icons.person_outline,
+                          size: 60, color: primaryBlue),
                       const SizedBox(height: 10),
                       Text(
-                        "Skills & Interests",
+                        "Mentor Information",
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -132,39 +126,44 @@ class _SkillsInterestsScreenState extends State<SkillsInterestsScreen>
                           child: Column(
                             children: [
                               _inputField(
-                                "Technical Skills",
-                                technicalSkillsController,
-                                Icons.code,
-                                hint: "e.g. Flutter, Java, Python",
+                                "Mentor Name",
+                                mentorNameController,
+                                Icons.person,
                                 validator: (v) =>
                                     v!.isEmpty ? "Required" : null,
                               ),
                               _inputField(
-                                "Soft Skills",
-                                softSkillsController,
-                                Icons.record_voice_over,
-                                hint:
-                                    "e.g. Communication, Teamwork",
-                                validator: (v) =>
-                                    v!.isEmpty ? "Required" : null,
+                                "Mentor Mobile Number",
+                                mentorMobileController,
+                                Icons.phone,
+                                keyboard: TextInputType.phone,
+                                validator: _validateMobile,
                               ),
-                              _inputField(
-                                "Area of Interest",
-                                interestsController,
-                                Icons.interests,
-                                hint:
-                                    "e.g. Mobile Development",
-                                validator: (v) =>
-                                    v!.isEmpty ? "Required" : null,
-                              ),
-                              _inputField(
-                                "Career Goal",
-                                careerGoalController,
-                                Icons.flag,
-                                hint: "Your future goal",
-                                maxLines: 2,
-                                validator: (v) =>
-                                    v!.isEmpty ? "Required" : null,
+
+                              DropdownButtonFormField<String>(
+                                value: feedbackStatus,
+                                items: ["Pending", "Completed", "Reviewed"]
+                                    .map(
+                                      (s) => DropdownMenuItem(
+                                        value: s,
+                                        child: Text(s),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (v) =>
+                                    setState(() => feedbackStatus = v!),
+                                decoration: InputDecoration(
+                                  labelText: "Mentor Feedback Status",
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  prefixIcon: Icon(Icons.feedback,
+                                      color: primaryBlue),
+                                  border: OutlineInputBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
                               ),
 
                               const SizedBox(height: 24),
@@ -209,19 +208,17 @@ class _SkillsInterestsScreenState extends State<SkillsInterestsScreen>
     String label,
     TextEditingController controller,
     IconData icon, {
-    String? hint,
-    int maxLines = 1,
+    TextInputType keyboard = TextInputType.text,
     String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
-        maxLines: maxLines,
+        keyboardType: keyboard,
         validator: validator,
         decoration: InputDecoration(
           labelText: label,
-          hintText: hint,
           filled: true,
           fillColor: Colors.white,
           prefixIcon: Icon(icon, color: primaryBlue),
@@ -232,5 +229,13 @@ class _SkillsInterestsScreenState extends State<SkillsInterestsScreen>
         ),
       ),
     );
+  }
+
+  String? _validateMobile(String? value) {
+    if (value == null || value.isEmpty) return "Required";
+    if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
+      return "Enter 10-digit mobile number";
+    }
+    return null;
   }
 }

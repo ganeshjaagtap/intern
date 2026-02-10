@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_2/Screens/NotificationScreen.dart';
-import 'package:flutter_application_2/chat/screens/chat_selection_screen.dart';
-import 'SettingsScreen.dart';
-import 'AttendanceScreen.dart';
-import 'ReportScreen.dart';
+import 'package:flutter_application_2/features/student/profile/NotificationScreen.dart';
+import 'package:flutter_application_2/features/chat/screens/chat_selection_screen.dart';
+import '../profile/SettingsScreen.dart';
+import '../attendance/AttendanceScreen.dart';
+import '../reports/ReportScreen.dart';
 
 class StudentDashboardScreen extends StatelessWidget {
   const StudentDashboardScreen({super.key});
