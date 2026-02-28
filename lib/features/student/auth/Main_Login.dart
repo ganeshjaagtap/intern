@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'CreateAccountScreen.dart';
-import '../dashboard/StudentDashboardScreen.dart';
+import 'package:flutter_application_2/university_mentor/layout/mentor_main_layout.dart';
 
+import 'package:flutter_application_2/university_mentor/layout/mentor_main_layout.dart';
+import 'package:flutter_application_2/university_mentor/screens/mentor_dashboard_screen.dart';
+import 'package:flutter_application_2/features/student/dashboard/StudentDashboardScreen.dart';
+import 'package:flutter_application_2/features/student/auth/CreateAccountScreen.dart';
+import 'package:flutter_application_2/university_mentor/layout/mentor_main_layout.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,6 +24,9 @@ class _LoginScreenState extends State<LoginScreen>
 
   final Color primaryBlue = const Color(0xFF1976D2);
 
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -34,14 +41,63 @@ class _LoginScreenState extends State<LoginScreen>
     );
 
     Future.delayed(const Duration(seconds: 1), () {
-      setState(() => startAnimation = true);
+      if (mounted) {
+        setState(() => startAnimation = true);
+      }
     });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    emailController.dispose();
+    passwordController.dispose();
     super.dispose();
+  }
+
+  /// 🔐 LOGIN HANDLER
+  void handleLogin() {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    // 🛑 Empty validation
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter email/username and password"),
+        ),
+      );
+      return;
+    }
+
+    // 👨‍🏫 Mentor login
+    if (email == "mn" && password == "123") {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MentorMainLayout(),
+        ),
+      );
+      return;
+    }
+
+    // 👨‍🎓 Student login
+    if (email == "st" && password == "st123") {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const StudentDashboardScreen(),
+        ),
+      );
+      return;
+    }
+
+    // ❌ Invalid credentials
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Invalid login credentials"),
+      ),
+    );
   }
 
   @override
@@ -49,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen>
     return Scaffold(
       body: Stack(
         children: [
-          /// 🔁 MOVING BACKGROUND IMAGE
+          /// 🔁 BACKGROUND IMAGE
           AnimatedBuilder(
             animation: _animation,
             builder: (context, child) {
@@ -71,12 +127,11 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
 
-
           /// 🔷 MAIN UI
           SafeArea(
             child: Stack(
               children: [
-                /// LOGO MOVE
+                /// LOGO
                 AnimatedAlign(
                   duration: const Duration(milliseconds: 800),
                   curve: Curves.easeInOut,
@@ -88,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.school, size: 70, color: primaryBlue),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Text(
                           "Intern Tracker",
                           style: TextStyle(
@@ -102,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 ),
 
-                /// FADE-IN CONTENT
+                /// LOGIN CARD
                 AnimatedOpacity(
                   duration: const Duration(milliseconds: 800),
                   opacity: startAnimation ? 1 : 0,
@@ -115,7 +170,6 @@ class _LoginScreenState extends State<LoginScreen>
                           children: [
                             const SizedBox(height: 200),
 
-                            /// 🔵 BLUEISH LOGIN CARD
                             ConstrainedBox(
                               constraints:
                                   const BoxConstraints(maxWidth: 480),
@@ -126,8 +180,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      color:
-                                          Colors.black.withOpacity(0.15),
+                                      color: Colors.black.withOpacity(0.15),
                                       blurRadius: 20,
                                       offset: const Offset(0, 10),
                                     ),
@@ -136,12 +189,15 @@ class _LoginScreenState extends State<LoginScreen>
                                 child: Column(
                                   children: [
                                     TextField(
+                                      controller: emailController,
                                       decoration: InputDecoration(
                                         labelText: "Username / Email",
                                         filled: true,
                                         fillColor: Colors.white,
-                                        prefixIcon: Icon(Icons.person,
-                                            color: primaryBlue),
+                                        prefixIcon: Icon(
+                                          Icons.person,
+                                          color: primaryBlue,
+                                        ),
                                         border: OutlineInputBorder(
                                           borderRadius:
                                               BorderRadius.circular(12),
@@ -151,13 +207,16 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                     const SizedBox(height: 16),
                                     TextField(
+                                      controller: passwordController,
                                       obscureText: obscurePassword,
                                       decoration: InputDecoration(
                                         labelText: "Password",
                                         filled: true,
                                         fillColor: Colors.white,
-                                        prefixIcon: Icon(Icons.lock,
-                                            color: primaryBlue),
+                                        prefixIcon: Icon(
+                                          Icons.lock,
+                                          color: primaryBlue,
+                                        ),
                                         suffixIcon: IconButton(
                                           icon: Icon(
                                             obscurePassword
@@ -183,19 +242,11 @@ class _LoginScreenState extends State<LoginScreen>
                                     SizedBox(
                                       width: double.infinity,
                                       child: ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => const StudentDashboardScreen(),
-                                            ),
-                                          );
-                                        },
+                                        onPressed: handleLogin,
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: primaryBlue,
-                                          padding:
-                                              const EdgeInsets.symmetric(
-                                                  vertical: 14),
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 14),
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(12),
@@ -204,9 +255,9 @@ class _LoginScreenState extends State<LoginScreen>
                                         child: const Text(
                                           "Login",
                                           style: TextStyle(
-                                            color: Colors.black
+                                            color: Colors.black,
                                           ),
-                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -216,24 +267,22 @@ class _LoginScreenState extends State<LoginScreen>
 
                             const SizedBox(height: 20),
 
+                            /// SIGN UP
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        const CreateAccountScreen(),
+                                    builder: (_) => CreateAccountScreen(),
                                   ),
                                 );
                               },
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
+                                  const Text(
                                     "New user? ",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                    ),
+                                    style: TextStyle(color: Colors.white),
                                   ),
                                   Text(
                                     "Sign Up",
@@ -245,7 +294,6 @@ class _LoginScreenState extends State<LoginScreen>
                                 ],
                               ),
                             ),
-
                           ],
                         ),
                       ),

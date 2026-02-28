@@ -13,7 +13,7 @@ class AttendanceScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F4F4),
 
-      /// 🔙 APP BAR WITH BACK BUTTON
+      /// APP BAR WITH BACK BUTTON
       appBar: AppBar(
         backgroundColor: const Color(0xFF6BB6FF),
         elevation: 0,
@@ -268,8 +268,8 @@ class _CustomBottomNav extends StatelessWidget {
                 ),
 
                 _navItem(
-                  icon: Icons.settings,
-                  label: "Settings",
+                  icon: Icons.person_outline,
+                  label: "Profile",
                   active: currentIndex == 3,
                   onTap: () {
                     Navigator.pushReplacement(
