@@ -1,186 +1,156 @@
 import 'package:flutter/material.dart';
+import 'student_list_screen.dart';
+import 'active_internships_screen.dart';
+import 'completed_internships_screen.dart';
+import 'review_approvals_screen.dart';
 
 class MentorDashboardScreen extends StatelessWidget {
   const MentorDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const primaryBlue = Color(0xFF64A9F6);
-
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-     
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
 
-      /// 📄 BODY
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            /// 👋 WELCOME
-            Text(
-              "Welcome Back, Dr. Kundlikar 👋",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-            SizedBox(height: 16),
+              const _NeedsAttentionCard(),
 
-            /// 🚨 NEEDS ATTENTION
-            _NeedsAttentionCard(),
+              const SizedBox(height: 30),
 
-            SizedBox(height: 16),
+              const Text(
+                "Internship Overview",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
 
-            /// 📊 STATS
-            _StatsSection(),
+              const SizedBox(height: 15),
 
-            SizedBox(height: 20),
+              _StatsSection(),
 
-            /// 🔘 ACTION BUTTONS
-            MentorActionTile(
-              icon: Icons.fact_check_outlined,
-              title: "Review Approvals",
-            ),
-            MentorActionTile(
-              icon: Icons.bar_chart_rounded,
-              title: "View Reports",
-            ),
-            MentorActionTile(
-              icon: Icons.chat_bubble_outline,
-              title: "Message Mentor",
-            ),
+              const SizedBox(height: 30),
 
-            SizedBox(height: 30),
-          ],
+              const Text(
+                "Quick Actions",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              _QuickActions(),
+            ],
+          ),
         ),
       ),
-      
     );
   }
 }
 
-/* ----------------------------- WIDGETS ----------------------------- */
-
-class _NeedsAttentionCard extends StatelessWidget {
-  const _NeedsAttentionCard();
-
+class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7DADA),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            backgroundColor: Color(0xFFF4B4B4),
-            child: Icon(Icons.warning_amber_rounded, color: Colors.red),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Needs Attention",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  "4 students at risk · 2 pending approvals",
-                  style: TextStyle(fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+    return Column(
+      children: [
+
+        MentorActionTile(
+          icon: Icons.fact_check_outlined,
+          title: "Review Approvals",
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ReviewApprovalsScreen(),
               ),
-            ),
-            child: const Text("Review"),
-          )
-        ],
-      ),
+            );
+          },
+        ),
+
+        const MentorActionTile(
+          icon: Icons.bar_chart_rounded,
+          title: "View Reports",
+        ),
+
+        const MentorActionTile(
+          icon: Icons.chat_bubble_outline,
+          title: "Message Students",
+        ),
+      ],
     );
   }
 }
 
 class _StatsSection extends StatelessWidget {
-  const _StatsSection({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        /// 🔹 First Row
+
         Row(
           children: [
+
             Expanded(
-              child: _statButton(
+              child: _buildStatCard(
                 context,
-                "Total Students",
-                const MiniStatCard(
-                  icon: Icons.bar_chart,
-                  value: "90",
-                  label: "Total Students",
-                  bg: Color(0xFFD9ECFF),
-                  iconColor: Colors.blue,
-                ),
+                title: "Total Students",
+                value: "90",
+                icon: Icons.groups,
+                color: Colors.blue,
+                screen: const StudentListScreen(department: "IoT"),
               ),
             ),
-            const SizedBox(width: 12),
+
+            const SizedBox(width: 15),
+
             Expanded(
-              child: _statButton(
+              child: _buildStatCard(
                 context,
-                "Active Internships",
-                const MiniStatCard(
-                  icon: Icons.description,
-                  value: "7",
-                  label: "Active Internships",
-                  bg: Color(0xFFFFF2CC),
-                  iconColor: Colors.orange,
-                ),
+                title: "Active Now",
+                value: "24",
+                icon: Icons.bolt,
+                color: Colors.orange,
+                screen: const ActiveInternshipsScreen(),
               ),
             ),
           ],
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 15),
 
-        /// 🔹 Second Row
         Row(
           children: [
+
+         Expanded(
+  child: _buildStatCard(
+    context,
+    title: "Completed",
+    value: "60",
+    icon: Icons.check_circle_outline,
+    color: Colors.green,
+    screen:  const CompletedInternshipsScreen(),
+  ),
+),
+
+            const SizedBox(width: 15),
+
             Expanded(
-              child: _statButton(
+              child: _buildStatCard(
                 context,
-                "Completed",
-                const MiniStatCard(
-                  icon: Icons.check_circle,
-                  value: "60",
-                  label: "Completed",
-                  bg: Color(0xFFFFE6D9),
-                  iconColor: Colors.deepOrange,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _statButton(
-                context,
-                "Pending Approvals",
-                const MiniStatCard(
-                  icon: Icons.pending_actions,
-                  value: "7",
-                  label: "Pending Approvals",
-                  bg: Color(0xFFDFF5EA),
-                  iconColor: Colors.green,
-                ),
+                title: "Pending",
+                value: "06",
+                icon: Icons.hourglass_empty,
+                color: Colors.deepOrange,
               ),
             ),
           ],
@@ -189,142 +159,97 @@ class _StatsSection extends StatelessWidget {
     );
   }
 
-  /// 🔹 Clickable Wrapper
-  Widget _statButton(BuildContext context, String title, Widget child) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("$title coming soon 🚀"),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
-        child: child,
+Widget _buildStatCard(
+  BuildContext context, {
+  required String title,
+  required String value,
+  required IconData icon,
+  required Color color,
+  Widget? screen,
+}) {
+  return InkWell(
+    borderRadius: BorderRadius.circular(18),
+    onTap: () {
+      if (screen != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => screen,
+          ),
+        );
+      }
+    },
+    child: Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: color.withOpacity(.15),
+        borderRadius: BorderRadius.circular(18),
       ),
-    );
-  }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color),
+          const SizedBox(height: 15),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(title),
+        ],
+      ),
+    ),
+  );
+}
 }
 
-
-
-  /// 🔹 Reusable Button Style
-  ButtonStyle _buttonStyle() {
-    return ElevatedButton.styleFrom(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      padding: EdgeInsets.zero,
-      shadowColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
-    );
-  }
-
-
-
-/// 🔹 MINI STAT CARD
-class MiniStatCard extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  final String label;
-  final Color bg;
-  final Color iconColor;
-
-  const MiniStatCard({
-    super.key,
-    required this.icon,
-    required this.value,
-    required this.label,
-    required this.bg,
-    required this.iconColor,
-  });
+class _NeedsAttentionCard extends StatelessWidget {
+  const _NeedsAttentionCard();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.all(18),
+
       decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFFFFEBEE),
+        borderRadius: BorderRadius.circular(20),
       ),
-      child: Row(
+
+      child: const Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.7),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.black54,
-                ),
-              ),
-            ],
-          ),
+          Icon(Icons.warning, color: Colors.red),
+          SizedBox(width: 10),
+          Text("4 students at risk · 2 pending"),
         ],
       ),
     );
   }
 }
 
-/// 🔹 ACTION TILE
 class MentorActionTile extends StatelessWidget {
   final IconData icon;
   final String title;
+  final VoidCallback? onTap;
 
   const MentorActionTile({
     super.key,
     required this.icon,
     required this.title,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFDFF6F1),
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return Card(
+      elevation: 1,
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: const Color(0xFFB2E9DC),
-          child: Icon(icon, color: Colors.black),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("$title coming soon 🚀"),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
+        leading: Icon(icon),
+        title: Text(title),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+        onTap: onTap,
       ),
     );
   }

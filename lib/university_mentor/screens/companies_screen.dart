@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'CompanyDetailScreen.dart'; 
 
 class CompaniesScreen extends StatefulWidget {
   const CompaniesScreen({super.key});
@@ -8,40 +9,88 @@ class CompaniesScreen extends StatefulWidget {
 }
 
 class _CompaniesScreenState extends State<CompaniesScreen> {
-  final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  String searchQuery = ""; 
 
-  final List<Map<String, String>> companies = [
-    {"name": "Jassica Robert", "email": "jassicarobert@gmail.com"},
-    {"name": "Carol Sons", "email": "carolsons@gmail.com"},
-    {"name": "Robert Jason", "email": "robertjason@gmail.com"},
-    {"name": "Williams Jones", "email": "williamsjones@gmail.com"},
-    {"name": "Carol Sons", "email": "carolsons@gmail.com"},
-    {"name": "Robert Jason", "email": "robertjason@gmail.com"},
-    {"name": "Williams Jones", "email": "williamsjones@gmail.com"},
+  // 📝 LOCAL DATA: Your mock database
+  final List<Map<String, dynamic>> dummyCompanies = [
+    {
+      "id": "1",
+      "name": "Google",
+      "email": "hr@google.com",
+      "industry": "Tech & AI",
+      "address": "Mountain View, CA",
+      "description": "Google's mission is to organize the world's information and make it universally accessible and useful. We offer internship roles in Software Engineering, Data Science, and Product Management.",
+      "website": "www.google.com"
+    },
+    {
+      "id": "2",
+      "name": "Tesla",
+      "email": "careers@tesla.com",
+      "industry": "Automotive",
+      "address": "Austin, TX",
+      "description": "Accelerating the world's transition to sustainable energy through electric vehicles, solar, and integrated renewable energy solutions.",
+      "website": "www.tesla.com"
+    },
+    {
+      "id": "3",
+      "name": "Microsoft",
+      "email": "recruitment@microsoft.com",
+      "industry": "Software",
+      "address": "Redmond, WA",
+      "description": "Empowering every person and organization on the planet to achieve more. Join us for world-class mentorship and innovative projects.",
+      "website": "www.microsoft.com"
+    },
+    {
+      "id": "4",
+      "name": "Amazon",
+      "email": "jobs@amazon.com",
+      "industry": "E-Commerce",
+      "address": "Seattle, WA",
+      "description": "Customer obsession rather than competitor focus, passion for invention, commitment to operational excellence, and long-term thinking.",
+      "website": "www.amazon.com"
+    },
+    {
+      "id": "5",
+      "name": "Apple",
+      "email": "internships@apple.com",
+      "industry": "Consumer Electronics",
+      "address": "Cupertino, CA",
+      "description": "At Apple, we don’t just build products — we create the kind of wonder that’s revolutionized entire industries. Join our hardware or software teams.",
+      "website": "www.apple.com"
+    },
   ];
 
   @override
   void dispose() {
-    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    const primaryBlue = Color(0xFF64A9F6); // Match the exact sky blue
-    const bgLight = Color(0xFFF5F7F9);    // Professional light gray background
+    const primaryBlue = Color(0xFF64A9F6); 
+    const bgLight = Color(0xFFF5F7F9);    
 
-    return Container(
-      color: bgLight,
-      child: Column(
+    // Filtering logic for the search bar
+    final filteredCompanies = dummyCompanies.where((company) {
+      final name = company["name"].toString().toLowerCase();
+      return name.contains(searchQuery);
+    }).toList();
+
+    return Scaffold(
+      backgroundColor: bgLight,
+      body: Column(
         children: [
-          /// 📘 BLUE SEARCH HEADER (Matches Photo Style)
+          /// 📘 SEARCH HEADER
           Container(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
             decoration: const BoxDecoration(
               color: primaryBlue,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
             ),
             child: SafeArea(
               bottom: false,
@@ -51,12 +100,20 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(25),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)
+                  ]
                 ),
                 child: TextField(
                   controller: _searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value.toLowerCase();
+                    });
+                  },
                   decoration: const InputDecoration(
-                    icon: Icon(Icons.search, color: Colors.black54),
-                    hintText: "Search company",
+                    icon: Icon(Icons.search, color: primaryBlue),
+                    hintText: "Search company...",
                     border: InputBorder.none,
                   ),
                 ),
@@ -64,87 +121,72 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
             ),
           ),
 
-          /// ⚪ TITLE BAR (White rounded container from photo)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 5,
-                  offset: Offset(0, 2),
-                )
-              ]
-            ),
-            child: const Text(
-              "Authenticated Companies",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-          ),
-
-          /// 🏢 SCROLLABLE LIST
+          /// 🏢 COMPANY LIST
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-              itemCount: companies.length,
-              itemBuilder: (context, index) {
-                return _buildCompanyCard(companies[index], primaryBlue);
-              },
-            ),
+            child: filteredCompanies.isEmpty 
+              ? _buildEmptyState()
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                  itemCount: filteredCompanies.length,
+                  itemBuilder: (context, index) {
+                    final company = filteredCompanies[index];
+                    return _buildCompanyCard(company, primaryBlue);
+                  },
+                ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCompanyCard(Map<String, String> company, Color themeColor) {
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off, size: 80, color: Colors.grey[300]),
+          const SizedBox(height: 10),
+          Text("No companies match your search.", style: TextStyle(color: Colors.grey[600])),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompanyCard(Map<String, dynamic> company, Color themeColor) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(25), // Rounded corners like photo
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.all(12),
+        onTap: () {
+          // 🚀 Passing the whole 'company' map to the Detail screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CompanyDetailScreen(companyData: company),
+            ),
+          );
+        },
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         leading: CircleAvatar(
           radius: 28,
           backgroundColor: themeColor.withOpacity(0.1),
-          child: Icon(Icons.business, color: themeColor),
+          child: Icon(Icons.business_rounded, color: themeColor, size: 30),
         ),
         title: Text(
-          company["name"]!,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          company["name"],
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          company["email"]!,
-          style: TextStyle(color: Colors.grey.shade600),
+          company["industry"],
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-        onTap: () {
-          // Add navigation logic
-        },
+        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.grey),
       ),
     );
   }
